@@ -1,0 +1,40 @@
+dataset_info:
+  features:
+    - name: id
+      dtype: string
+    - name: generator
+      dtype: string
+    - name: category
+      dtype: string
+    - name: problem
+      dtype: string
+    - name: conversations
+      list:
+        - name: from
+          dtype: string
+        - name: value
+          dtype: string
+    - name: qwen3-reasoning
+      dtype: string
+    - name: qwen3-solution
+      dtype: string
+    - name: len_qwen3_reasoning
+      dtype: int32
+    - name: len_qwen3_solution
+      dtype: int32
+
+  splits:
+    - name: raw
+      num_bytes: 0
+      num_examples: 0
+    - name: sft
+      num_bytes: 0
+      num_examples: 0
+
+configs:
+  - config_name: default
+    data_files:
+      - split: raw
+        path: rawdata.jsonl
+      - split: sft
+        path: sft.jsonl
