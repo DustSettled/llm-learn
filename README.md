@@ -17,7 +17,7 @@
 ```text
 .
 ├── train_code/
-│   ├── Qwen3.5-2B-Finetune-Local.py   # 本地 A100 训练主脚本
+│   ├── Qwen3.5-2B-Finetune-Local.py   # 本地 GPU 训练主脚本
 │   ├── Qwen3.5-9B-Neo-Kaggle.py       # Kaggle 版 Qwen3.5-9B 示例
 │   ├── Qwopus3-5-27b-Colab.py         # Colab 版 Qwopus3.5-27B 示例
 │   └── Qwopus-3.5-35B-A3B-Kaggle.py   # Kaggle 版 Qwopus3.5-35B MoE 示例
@@ -101,7 +101,7 @@ pip install datasets peft accelerate bitsandbytes wandb sentencepiece protobuf h
 
 ### 4. 准备 Hugging Face 与 W&B
 
-模型和数据集会从 Hugging Face 下载。公开模型通常不需要登录，但建议提前配置 token，避免下载限流：
+模型和数据集会从 Hugging Face 下载。公开模型通常不需要登录(确保有Hugging Face账号)，但建议提前配置 token，避免下载限流：
 
 ```bash
 huggingface-cli login
@@ -123,8 +123,7 @@ export WANDB_API_KEY="你的 wandb key"
 python train_code/Qwen3.5-2B-Finetune-Local.py
 ```
 
-> [!WARNING]
-> **首次运行会自动下载基础模型和数据集**，耗时取决于网络和磁盘缓存状态。
+首次运行会自动下载基础模型和数据集，耗时取决于网络和磁盘缓存状态。
 
 ### 6. 查看输出结果
 
@@ -147,7 +146,7 @@ outputs/Qwen3.5-2B-Finetune/
 仓库中的 `test.py` 是一个推理测试示例，但其中模型路径是本机绝对路径。使用前请将：
 
 ```python
-model_path = "/data/lunengbo/LNB/Jackrong-llm-finetuning-guide/outputs/Qwen3.5-2B-Finetune/Qwen3.5-2B-Merged-16bit"
+model_path = "/.../llm-learn/outputs/Qwen3.5-2B-Finetune/Qwen3.5-2B-Merged-16bit"
 ```
 
 改为你的实际合并模型路径，例如：
@@ -164,36 +163,6 @@ python test.py
 
 ## 常见调整
 
-### 显存不足
-
-优先调整 `train_code/Qwen3.5-2B-Finetune-Local.py` 中的参数：
-
-```python
-per_device_train_batch_size = 8
-gradient_accumulation_steps = 4
-MAX_CONTEXT_WINDOW = 4096
-```
-
-如果仍然不足，可以降低 LoRA rank：
-
-```python
-r = 32
-lora_alpha = 32
-```
-
-### 想增加训练数据
-
-修改脚本中的采样数量：
-
-```python
-num_samples_dict = {
-    "ds1": 2000,
-    "ds2": 2000,
-}
-```
-
-正式训练可以增大样本数，但建议先小规模跑通完整流程，再扩大数据量。
-
 ### 不想使用 W&B
 
 启动脚本时在 W&B 提示处直接回车即可。脚本会设置：
@@ -201,13 +170,6 @@ num_samples_dict = {
 ```python
 os.environ["WANDB_DISABLED"] = "true"
 ```
-
-## 注意事项
-
-- `wandb/` 是本地训练日志目录，不是项目源码；确认不需要本地日志后可以删除。
-- `unsloth_compiled_cache/` 是 Unsloth 编译缓存，不建议手动修改。
-- `download_datasets.py` 会下载数据集并执行 git add/commit/push，运行前请确认你确实需要同步数据到远程仓库。
-- `merge.py` 和 `test.py` 中存在绝对路径，迁移到其他机器时需要先改路径。
 
 ## 许可证
 
